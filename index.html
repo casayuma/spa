@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Yuma — Spa & Wellness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sand:#F5F0E8;--sand-dark:#E8E0CE;--sand-mid:#D4C9B0;
+  --olive:#4A4535;--olive-light:#7A7158;--olive-pale:#9E9478;
+  --terracotta:#C4705A;--terra-light:#D4897A;
+  --cream:#FDFAF4;--white:#FFFFFF;
+  --font-display:'Cormorant Garamond',serif;
+  --font-body:'DM Sans',sans-serif;
+  --radius:4px;
+}
+body{background:var(--cream);color:var(--olive);font-family:var(--font-body);min-height:100vh}
+
+/* ── HERO ── */
+.hero{background:var(--sand);padding:3rem 2rem 2rem;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--sand-dark)}
+.hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(ellipse,rgba(196,112,90,0.08) 0%,transparent 70%);pointer-events:none}
+.logo-mark{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:1.2rem}
+.logo-lines{display:flex;flex-direction:column;gap:3px}
+.logo-lines span{display:block;background:var(--olive-pale);height:1px}
+.logo-lines span:nth-child(1){width:24px}
+.logo-lines span:nth-child(2){width:16px}
+.logo-lines span:nth-child(3){width:8px}
+.logo-lines.r span:nth-child(2){align-self:flex-end}
+.logo-lines.r span:nth-child(3){align-self:flex-end}
+.logo-text{font-family:var(--font-display);font-size:1rem;font-weight:300;letter-spacing:0.35em;color:var(--olive);text-transform:uppercase}
+.hero h1{font-family:var(--font-display);font-size:3.2rem;font-weight:300;letter-spacing:0.05em;color:var(--olive);line-height:1.1;margin-bottom:0.5rem}
+.hero h1 em{font-style:italic;color:var(--terracotta)}
+.hero p{font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--olive-pale);margin-bottom:1.5rem}
+.lang-toggle{display:inline-flex;border:1px solid var(--sand-mid);border-radius:20px;overflow:hidden}
+.lang-toggle button{background:none;border:none;padding:0.3rem 1rem;font-family:var(--font-body);font-size:0.75rem;letter-spacing:0.1em;cursor:pointer;color:var(--olive-light);transition:all 0.2s}
+.lang-toggle button.active{background:var(--olive);color:var(--cream)}
+
+/* ── TABS ── */
+.tabs-nav{display:flex;background:var(--sand);border-bottom:1px solid var(--sand-dark)}
+.tab-btn{flex:1;padding:1.1rem;background:none;border:none;font-family:var(--font-body);font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;color:var(--olive-light);position:relative;transition:all 0.2s}
+.tab-btn.active{color:var(--olive);background:var(--cream)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--terracotta)}
+
+/* ── LAYOUT ── */
+.content{max-width:680px;margin:0 auto;padding:2rem 1.5rem}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── SECTION LABELS ── */
+.section-label{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--olive-pale);margin-bottom:0.75rem;margin-top:1.5rem;display:flex;align-items:center;gap:0.75rem}
+.section-label::after{content:'';flex:1;height:1px;background:var(--sand-dark)}
+
+/* ── SERVICE GRID ── */
+.service-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem}
+.service-card{background:var(--sand);border:1px solid var(--sand-dark);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;position:relative}
+.service-card:hover{border-color:var(--olive-pale)}
+.service-card.selected{border-color:var(--terracotta);background:#FBF3F0}
+.service-card.selected::after{content:'✓';position:absolute;top:0.6rem;right:0.75rem;color:var(--terracotta);font-size:0.85rem}
+.service-card h3{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--olive);margin-bottom:0.15rem}
+.service-card .sub{font-size:0.68rem;letter-spacing:0.07em;color:var(--olive-pale);text-transform:uppercase;margin-bottom:0.5rem}
+.price-row{display:flex;gap:0.4rem;flex-wrap:wrap}
+.duration-btn{font-size:0.68rem;padding:0.22rem 0.55rem;border:1px solid var(--sand-mid);border-radius:2px;background:var(--cream);color:var(--olive);cursor:pointer;font-family:var(--font-body);transition:all 0.2s;white-space:nowrap}
+.duration-btn:hover,.duration-btn.sel{background:var(--terracotta);border-color:var(--terracotta);color:white}
+
+/* ── THERAPIST ── */
+.therapist-row{display:flex;gap:0.75rem;margin-bottom:0.5rem}
+.therapist-card{flex:1;padding:0.85rem;border:1px solid var(--sand-dark);border-radius:var(--radius);cursor:pointer;text-align:center;transition:all 0.2s;background:var(--sand)}
+.therapist-card:hover{border-color:var(--olive-pale)}
+.therapist-card.selected{border-color:var(--terracotta);background:#FBF3F0}
+.therapist-card .icon{font-size:1.4rem;margin-bottom:0.3rem}
+.therapist-card p{font-size:0.75rem;color:var(--olive);font-weight:500}
+.therapist-card small{font-size:0.65rem;color:var(--olive-pale)}
+
+/* ── COUPLE TOGGLE ── */
+.couple-toggle{display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;border:1px solid var(--sand-dark);border-radius:var(--radius);background:var(--sand);cursor:pointer;margin-bottom:0.5rem;transition:all 0.2s}
+.couple-toggle.on{border-color:var(--terracotta);background:#FBF3F0}
+.couple-toggle-text{flex:1}
+.couple-toggle-text p{font-size:0.78rem;color:var(--olive)}
+.couple-toggle-text small{font-size:0.65rem;color:var(--olive-pale)}
+.toggle-sw{width:36px;height:20px;background:var(--sand-mid);border-radius:10px;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle-sw::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;background:white;border-radius:50%;transition:transform 0.2s}
+.couple-toggle.on .toggle-sw{background:var(--terracotta)}
+.couple-toggle.on .toggle-sw::after{transform:translateX(16px)}
+
+/* ── FORMS ── */
+.form-row{margin-bottom:1rem}
+.form-row label{display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--olive-pale);margin-bottom:0.4rem}
+.form-row input,.form-row select{width:100%;padding:0.7rem 0.85rem;border:1px solid var(--sand-dark);border-radius:var(--radius);background:var(--sand);color:var(--olive);font-family:var(--font-body);font-size:0.85rem;outline:none;transition:border-color 0.2s;appearance:none;-webkit-appearance:none}
+.form-row input:focus,.form-row select:focus{border-color:var(--olive-pale)}
+.form-row.two{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+
+/* ── GUEST TYPE ── */
+.guest-type-row{display:flex;gap:0.75rem;margin-bottom:1rem}
+.guest-type-btn{flex:1;padding:0.7rem;border:1px solid var(--sand-dark);border-radius:var(--radius);background:var(--sand);cursor:pointer;text-align:center;transition:all 0.2s;font-family:var(--font-body);font-size:0.75rem;color:var(--olive)}
+.guest-type-btn.active{border-color:var(--terracotta);background:#FBF3F0;color:var(--terracotta)}
+
+/* ── SUMMARY ── */
+.summary-box{background:var(--sand);border:1px solid var(--sand-mid);border-radius:var(--radius);padding:1.25rem;margin:1.5rem 0}
+.summary-box h4{font-family:var(--font-display);font-size:1.1rem;font-weight:400;color:var(--olive);margin-bottom:0.75rem}
+.summary-line{display:flex;justify-content:space-between;font-size:0.8rem;padding:0.25rem 0;color:var(--olive-light)}
+.summary-total{display:flex;justify-content:space-between;font-size:0.95rem;font-weight:500;padding:0.6rem 0 0;border-top:1px solid var(--sand-mid);margin-top:0.4rem;color:var(--olive)}
+
+/* ── POLICY ── */
+.policy-box{border-left:2px solid var(--terra-light);padding:0.85rem 1rem;margin:1.5rem 0;background:var(--sand);border-radius:0 var(--radius) var(--radius) 0}
+.policy-box p{font-size:0.75rem;color:var(--olive-light);line-height:1.6;margin-bottom:0.5rem}
+.policy-box p:last-child{margin-bottom:0}
+
+/* ── BUTTONS ── */
+.submit-btn{width:100%;padding:1rem;background:var(--olive);color:var(--cream);border:none;border-radius:var(--radius);font-family:var(--font-display);font-size:1.1rem;font-weight:300;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;margin-top:1rem;position:relative}
+.submit-btn:hover:not(:disabled){background:var(--terracotta)}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed}
+.submit-btn.loading::after{content:'';position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
+
+/* ── DAYPASS ── */
+.dp-price-hero{text-align:center;padding:1.5rem;background:var(--sand);border-radius:var(--radius);margin-bottom:1.5rem;border:1px solid var(--sand-dark)}
+.dp-price-hero .price{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--olive)}
+.dp-price-hero small{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--olive-pale)}
+.dp-price-hero .credit{font-size:0.78rem;color:var(--terracotta);margin-top:0.4rem}
+.daypass-feature{display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--sand-dark)}
+.daypass-feature:last-child{border-bottom:none}
+.feat-icon{width:28px;height:28px;background:var(--sand-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem}
+.daypass-feature p{font-size:0.78rem;color:var(--olive)}
+.daypass-feature small{font-size:0.68rem;color:var(--olive-pale)}
+.features-wrap{background:var(--sand);border:1px solid var(--sand-dark);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1.5rem}
+
+/* ── INFO BANNER ── */
+.info-banner{background:var(--sand);border:1px solid var(--sand-dark);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:1.5rem;display:flex;gap:0.75rem;align-items:flex-start}
+.info-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--terracotta);flex-shrink:0;margin-top:0.35rem}
+.info-banner p{font-size:0.75rem;color:var(--olive-light);line-height:1.6}
+
+/* ── ERROR / SUCCESS ── */
+.field-error{font-size:0.7rem;color:var(--terracotta);margin-top:0.3rem;display:none}
+.field-error.show{display:block}
+.error-banner{background:#FBF0EE;border:1px solid var(--terra-light);border-radius:var(--radius);padding:0.85rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:#8B3A2A;display:none;line-height:1.5}
+.error-banner.show{display:block}
+
+/* ── SUCCESS SCREEN ── */
+.success-screen{text-align:center;padding:3rem 1.5rem;display:none}
+.success-screen.show{display:block}
+.success-icon{width:64px;height:64px;border-radius:50%;background:var(--sand);border:1px solid var(--sand-dark);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.5rem}
+.success-screen h2{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--olive);margin-bottom:0.75rem}
+.success-screen p{font-size:0.82rem;color:var(--olive-light);line-height:1.7;max-width:360px;margin:0 auto 0.5rem}
+.success-screen .note{font-size:0.75rem;color:var(--olive-pale);font-style:italic;max-width:360px;margin:0 auto 1.5rem}
+
+@media(max-width:480px){
+  .hero h1{font-size:2.4rem}
+  .service-grid{grid-template-columns:1fr}
+  .form-row.two{grid-template-columns:1fr}
+  .therapist-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="logo-mark">
+    <div class="logo-lines"><span></span><span></span><span></span></div>
+    <span class="logo-text">Casa Yuma</span>
+    <div class="logo-lines r"><span></span><span></span><span></span></div>
+  </div>
+  <h1>Spa & <em>Wellness</em></h1>
+  <p id="hero-sub">Puerto Escondido · Reservaciones</p>
+  <div class="lang-toggle">
+    <button class="active" onclick="setLang('es')">ES</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-nav" id="tabs-nav">
+  <button class="tab-btn active" id="tab-btn-massage" onclick="switchTab('massage')">Masajes</button>
+  <button class="tab-btn" id="tab-btn-daypass" onclick="switchTab('daypass')">Day Pass</button>
+</div>
+
+<div class="content">
+
+  <!-- ═══════════════ MASAJES ═══════════════ -->
+  <div class="tab-content active" id="tab-massage-content">
+
+    <div class="section-label" id="lbl-service">Elige tu tratamiento</div>
+    <div class="service-grid" id="service-grid"></div>
+
+    <div class="section-label" id="lbl-therapist">Terapeuta</div>
+    <div class="therapist-row">
+      <div class="therapist-card" id="th-female" onclick="selectTherapist('female')">
+        <div class="icon">♀</div>
+        <p id="th-female-lbl">Mujer</p>
+        <small id="th-female-sub">Terapeuta femenina</small>
+      </div>
+      <div class="therapist-card" id="th-male" onclick="selectTherapist('male')">
+        <div class="icon">♂</div>
+        <p id="th-male-lbl">Hombre</p>
+        <small id="th-male-sub">Terapeuta masculino</small>
+      </div>
+      <div class="therapist-card" id="th-any" onclick="selectTherapist('any')">
+        <div class="icon">◎</div>
+        <p id="th-any-lbl">Sin preferencia</p>
+        <small id="th-any-sub">Cualquier terapeuta</small>
+      </div>
+    </div>
+
+    <div class="couple-toggle" id="couple-toggle" onclick="toggleCouple()">
+      <div class="toggle-sw" id="couple-sw"></div>
+      <div class="couple-toggle-text">
+        <p id="couple-lbl">Masaje en pareja</p>
+        <small id="couple-sub">Ambos terapeutas · precio × 2</small>
+      </div>
+    </div>
+
+    <div class="section-label" id="lbl-datetime">Fecha y hora</div>
+    <div class="form-row two">
+      <div>
+        <label id="lbl-date">Fecha</label>
+        <input type="date" id="massage-date" oninput="populateTimeSlots();updateSummary()">
+      </div>
+      <div>
+        <label id="lbl-time">Hora</label>
+        <select id="massage-time" onchange="updateSummary()">
+          <option value="">-- Hora --</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label" id="lbl-guesttype">Tipo de huésped</div>
+    <div class="guest-type-row">
+      <button class="guest-type-btn active" id="btn-huesped" onclick="setGuestType('huesped')">Huésped del hotel</button>
+      <button class="guest-type-btn" id="btn-externo" onclick="setGuestType('externo')">Visitante externo</button>
+    </div>
+
+    <div class="form-row two">
+      <div>
+        <label id="lbl-name">Nombre completo</label>
+        <input type="text" id="guest-name" placeholder="">
+      </div>
+      <div id="room-wrap">
+        <label id="lbl-room">Habitación</label>
+        <input type="text" id="room-number" placeholder="Ej. 12">
+      </div>
+      <div id="phone-wrap" style="display:none">
+        <label id="lbl-phone">WhatsApp</label>
+        <input type="tel" id="guest-phone" placeholder="+52 954 000 0000">
+      </div>
+    </div>
+
+    <div class="form-row" id="notes-wrap">
+      <label id="lbl-notes">Notas especiales</label>
+      <input type="text" id="guest-notes" placeholder="">
+    </div>
+
+    <div id="summary-area" style="display:none">
+      <div class="summary-box">
+        <h4 id="summary-title">Resumen</h4>
+        <div class="summary-line"><span id="s-service">—</span><span id="s-price">—</span></div>
+        <div class="summary-line"><span id="s-therapist">—</span><span></span></div>
+        <div class="summary-line"><span id="s-datetime">—</span><span></span></div>
+        <div class="summary-total"><span id="s-total-lbl">Total</span><span id="s-total">—</span></div>
+      </div>
+    </div>
+
+    <div class="policy-box">
+      <p><strong id="pol-cancel-lbl">Cancelación:</strong> <span id="pol-cancel-txt">Con mínimo 8 horas de anticipación.</span></p>
+      <p><strong id="pol-advance-lbl">Reserva online:</strong> <span id="pol-advance-txt">Mínimo 2 horas antes de la sesión. Para sesiones inmediatas, consulta en recepción.</span></p>
+      <p id="pol-medical"><em>Por favor informa a tu terapeuta sobre cualquier condición médica antes de la sesión.</em></p>
+    </div>
+
+    <div class="error-banner" id="massage-error"></div>
+    <button class="submit-btn" id="submit-massage" onclick="submitMassage()">Solicitar reservación</button>
+  </div>
+
+  <!-- ═══════════════ DAY PASS ═══════════════ -->
+  <div class="tab-content" id="tab-daypass-content">
+
+    <div class="dp-price-hero">
+      <div class="price">$2,200</div>
+      <small id="dp-price-lbl">MXN por persona</small>
+      <div class="credit" id="dp-credit-lbl">Incluye $700 en crédito de alimentos y bebidas</div>
+    </div>
+
+    <div class="section-label" id="lbl-included">Qué incluye</div>
+    <div class="features-wrap">
+      <div class="daypass-feature">
+        <div class="feat-icon">◎</div>
+        <div><p id="feat-pool">Acceso a alberca y áreas comunes</p><small id="feat-pool-sub">Acceso todo el día</small></div>
+      </div>
+      <div class="daypass-feature">
+        <div class="feat-icon">☕</div>
+        <div><p id="feat-fb">$700 crédito en restaurante</p><small id="feat-fb-sub">Válido el día del daypass</small></div>
+      </div>
+      <div class="daypass-feature">
+        <div class="feat-icon">💻</div>
+        <div><p id="feat-cowork">Espacio co-working</p><small id="feat-cowork-sub">WiFi de alta velocidad</small></div>
+      </div>
+      <div class="daypass-feature">
+        <div class="feat-icon">🌊</div>
+        <div><p id="feat-beach">Vista y acceso a playa</p><small id="feat-beach-sub">Puerto Escondido</small></div>
+      </div>
+    </div>
+
+    <div class="section-label" id="lbl-dp-datetime">Fecha y personas</div>
+    <div class="form-row two">
+      <div>
+        <label id="lbl-dp-date">Fecha de visita</label>
+        <input type="date" id="dp-date" oninput="updateDPSummary()">
+      </div>
+      <div>
+        <label id="lbl-dp-guests">Número de personas</label>
+        <select id="dp-guests" onchange="updateDPSummary()">
+          <option value="1">1 persona</option>
+          <option value="2">2 personas</option>
+          <option value="3">3 personas</option>
+          <option value="4">4 personas</option>
+          <option value="5">5 personas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label" id="lbl-dp-guesttype">Tipo de huésped</div>
+    <div class="guest-type-row">
+      <button class="guest-type-btn active" id="dp-btn-huesped" onclick="setDPGuestType('huesped')">Huésped del hotel</button>
+      <button class="guest-type-btn" id="dp-btn-externo" onclick="setDPGuestType('externo')">Visitante externo</button>
+    </div>
+
+    <div class="form-row two">
+      <div>
+        <label id="lbl-dp-name">Nombre completo</label>
+        <input type="text" id="dp-name" placeholder="">
+      </div>
+      <div id="dp-room-wrap">
+        <label id="lbl-dp-room">Habitación</label>
+        <input type="text" id="dp-room" placeholder="Ej. 12">
+      </div>
+      <div id="dp-phone-wrap" style="display:none">
+        <label id="lbl-dp-phone">WhatsApp</label>
+        <input type="tel" id="dp-phone" placeholder="+52 954 000 0000">
+      </div>
+    </div>
+
+    <div id="dp-summary-area" style="display:none">
+      <div class="summary-box">
+        <h4 id="dp-sum-title">Resumen</h4>
+        <div class="summary-line"><span id="dp-s-date">—</span><span></span></div>
+        <div class="summary-line"><span id="dp-s-guests">—</span><span id="dp-s-price">—</span></div>
+        <div class="summary-total"><span id="dp-total-lbl">Total</span><span id="dp-s-total">—</span></div>
+      </div>
+    </div>
+
+    <div class="info-banner">
+      <div class="dot"></div>
+      <p id="dp-policy-txt">Disponibilidad sujeta a ocupación del hotel. No se aceptan day passes cuando la ocupación supera el 80%. Recepción confirmará disponibilidad.</p>
+    </div>
+
+    <div class="error-banner" id="dp-error"></div>
+    <button class="submit-btn" id="submit-dp" onclick="submitDaypass()">Solicitar Day Pass</button>
+  </div>
+
+  <!-- ═══════════════ SUCCESS ═══════════════ -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✓</div>
+    <h2 id="success-title">Solicitud enviada</h2>
+    <p id="success-body">Nuestro equipo de recepción revisará tu solicitud y te confirmará vía WhatsApp en breve.</p>
+    <p class="note" id="success-note"></p>
+    <button class="submit-btn" style="max-width:280px;margin:0 auto" onclick="resetForm()">Nueva reservación</button>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ─── CONFIGURACIÓN ───────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwSseDISLm5mRW35LQ8xsfRh3GSvoyMJCeekRqX3FFuU_ghmA4Y3R8Tj_qPWkL02_Og/exec';
+
+// ─── MENÚ DE SERVICIOS ───────────────────────────────────────
+const SERVICES = [
+  {id:'relajante', es:'Masaje Relajante',      en:'Relaxing Massage',       durations:[{min:60,price:2000},{min:90,price:2800}]},
+  {id:'tejido',    es:'Tejido Profundo',        en:'Deep Tissue',            durations:[{min:60,price:2200},{min:90,price:3100}]},
+  {id:'piedras',   es:'Piedras Calientes y Frías', en:'Hot & Cold Stone',   durations:[{min:60,price:2200}]},
+  {id:'ventosas',  es:'Masaje con Ventosas',    en:'Cupping Massage',        durations:[{min:60,price:2200}]},
+  {id:'drenaje',   es:'Drenaje Linfático',      en:'Lymphatic Drainage',     durations:[{min:60,price:2000}]},
+  {id:'zapoteco',  es:'Masaje Zapoteco',         en:'Zapotec Massage',        durations:[{min:60,price:2200}]},
+  {id:'facial',    es:'Facial',                 en:'Facial',                 durations:[{min:45,price:1400}]},
+];
+
+// ─── ESTADO ──────────────────────────────────────────────────
+let S = {
+  lang: 'es',
+  service: null,
+  duration: null,
+  therapist: null,
+  couple: false,
+  guestType: 'huesped',
+  dpGuestType: 'huesped',
+};
+
+// ─── TEXTOS BILINGÜE ─────────────────────────────────────────
+const TX = {
+  es:{
+    heroSub:'Puerto Escondido · Reservaciones',
+    tabMassage:'Masajes', tabDaypass:'Day Pass',
+    lblService:'Elige tu tratamiento', lblTherapist:'Terapeuta',
+    lblDatetime:'Fecha y hora', lblDate:'Fecha', lblTime:'Hora',
+    lblGuesttype:'Tipo de huésped', lblRoom:'Habitación',
+    lblName:'Nombre completo', lblPhone:'WhatsApp', lblNotes:'Notas especiales',
+    thFemale:'Mujer', thFemaleSub:'Terapeuta femenina',
+    thMale:'Hombre', thMaleSub:'Terapeuta masculino',
+    thAny:'Sin preferencia', thAnySub:'Cualquier terapeuta',
+    coupleLbl:'Masaje en pareja', coupleSub:'Ambos terapeutas · precio × 2',
+    sumTitle:'Resumen', sumTotal:'Total',
+    submitMassage:'Solicitar reservación',
+    btnHuesped:'Huésped del hotel', btnExterno:'Visitante externo',
+    polCancelLbl:'Cancelación:', polCancelTxt:'Con mínimo 8 horas de anticipación.',
+    polAdvanceLbl:'Reserva online:', polAdvanceTxt:'Mínimo 2 horas antes. Para sesiones inmediatas, consulta en recepción.',
+    polMedical:'Por favor informa a tu terapeuta sobre cualquier condición médica antes de la sesión.',
+    dpPriceLbl:'MXN por persona', dpCreditLbl:'Incluye $700 en crédito de alimentos y bebidas',
+    lblIncluded:'Qué incluye', lblDpDatetime:'Fecha y personas',
+    lblDpDate:'Fecha de visita', lblDpGuests:'Número de personas',
+    lblDpGuesttype:'Tipo de huésped', lblDpName:'Nombre completo',
+    lblDpRoom:'Habitación', lblDpPhone:'WhatsApp',
+    dpSumTitle:'Resumen', dpTotal:'Total',
+    dpPolicy:'Disponibilidad sujeta a ocupación del hotel. No se aceptan day passes cuando la ocupación supera el 80%. Recepción confirmará disponibilidad.',
+    submitDp:'Solicitar Day Pass',
+    featPool:'Acceso a alberca y áreas comunes', featPoolSub:'Acceso todo el día',
+    featFb:'$700 crédito en restaurante', featFbSub:'Válido el día del daypass',
+    featCowork:'Espacio co-working', featCoworkSub:'WiFi de alta velocidad',
+    featBeach:'Vista y acceso a playa', featBeachSub:'Puerto Escondido',
+    successTitle:'Solicitud enviada',
+    successBody:'Nuestro equipo de recepción revisará tu solicitud y te confirmará vía WhatsApp en breve.',
+    successNoteExt:'Como visitante externo, recibirás un link de pago para confirmar tu reservación.',
+    newBooking:'Nueva reservación',
+    errService:'Por favor selecciona un servicio y duración.',
+    errTherapist:'Por favor selecciona una preferencia de terapeuta.',
+    errDatetime:'Por favor selecciona fecha y hora.',
+    errName:'Por favor ingresa tu nombre.',
+    errRoom:'Por favor ingresa tu número de habitación.',
+    errPhone:'Por favor ingresa tu número de WhatsApp.',
+    errDpDate:'Por favor selecciona una fecha.',
+    errDpName:'Por favor ingresa tu nombre.',
+    sending:'Enviando...',
+  },
+  en:{
+    heroSub:'Puerto Escondido · Reservations',
+    tabMassage:'Massages', tabDaypass:'Day Pass',
+    lblService:'Choose your treatment', lblTherapist:'Therapist',
+    lblDatetime:'Date & time', lblDate:'Date', lblTime:'Time',
+    lblGuesttype:'Guest type', lblRoom:'Room number',
+    lblName:'Full name', lblPhone:'WhatsApp', lblNotes:'Special notes',
+    thFemale:'Female', thFemaleSub:'Female therapist',
+    thMale:'Male', thMaleSub:'Male therapist',
+    thAny:'No preference', thAnySub:'Any therapist',
+    coupleLbl:'Couples massage', coupleSub:'Both therapists · price × 2',
+    sumTitle:'Summary', sumTotal:'Total',
+    submitMassage:'Request booking',
+    btnHuesped:'Hotel guest', btnExterno:'Day visitor',
+    polCancelLbl:'Cancellation:', polCancelTxt:'Minimum 8 hours notice.',
+    polAdvanceLbl:'Online booking:', polAdvanceTxt:'Minimum 2 hours before session. For immediate sessions, contact front desk.',
+    polMedical:'Please inform your therapist of any medical conditions before your session.',
+    dpPriceLbl:'MXN per person', dpCreditLbl:'Includes $700 food & beverage credit',
+    lblIncluded:"What's included", lblDpDatetime:'Date & guests',
+    lblDpDate:'Visit date', lblDpGuests:'Number of guests',
+    lblDpGuesttype:'Guest type', lblDpName:'Full name',
+    lblDpRoom:'Room', lblDpPhone:'WhatsApp',
+    dpSumTitle:'Summary', dpTotal:'Total',
+    dpPolicy:'Availability subject to hotel occupancy. Day passes not accepted above 80% occupancy. Front desk will confirm availability.',
+    submitDp:'Request Day Pass',
+    featPool:'Pool & common areas access', featPoolSub:'All day access',
+    featFb:'$700 restaurant credit', featFbSub:'Valid day of visit',
+    featCowork:'Co-working space', featCoworkSub:'High-speed WiFi',
+    featBeach:'Beach view & access', featBeachSub:'Puerto Escondido',
+    successTitle:'Request sent',
+    successBody:'Our front desk team will review your request and confirm via WhatsApp shortly.',
+    successNoteExt:'As a day visitor, you will receive a payment link to confirm your booking.',
+    newBooking:'New booking',
+    errService:'Please select a service and duration.',
+    errTherapist:'Please select a therapist preference.',
+    errDatetime:'Please select a date and time.',
+    errName:'Please enter your name.',
+    errRoom:'Please enter your room number.',
+    errPhone:'Please enter your WhatsApp number.',
+    errDpDate:'Please select a date.',
+    errDpName:'Please enter your name.',
+    sending:'Sending...',
+  }
+};
+
+function t(k){ return TX[S.lang][k] || k }
+
+// ─── IDIOMA ───────────────────────────────────────────────────
+function setLang(l){
+  S.lang = l;
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.textContent === l.toUpperCase()));
+  applyTexts();
+}
+
+function applyTexts(){
+  document.getElementById('hero-sub').textContent = t('heroSub');
+  document.getElementById('tab-btn-massage').textContent = t('tabMassage');
+  document.getElementById('tab-btn-daypass').textContent = t('tabDaypass');
+  setText('lbl-service', t('lblService'));
+  setText('lbl-therapist', t('lblTherapist'));
+  setText('lbl-datetime', t('lblDatetime'));
+  setText('lbl-guesttype', t('lblGuesttype'));
+  setText('lbl-dp-datetime', t('lblDpDatetime'));
+  setText('lbl-dp-guesttype', t('lblDpGuesttype'));
+  setText('lbl-included', t('lblIncluded'));
+  document.getElementById('lbl-date').textContent = t('lblDate');
+  document.getElementById('lbl-time').textContent = t('lblTime');
+  document.getElementById('lbl-room').textContent = t('lblRoom');
+  document.getElementById('lbl-name').textContent = t('lblName');
+  document.getElementById('lbl-phone').textContent = t('lblPhone');
+  document.getElementById('lbl-notes').textContent = t('lblNotes');
+  document.getElementById('lbl-dp-date').textContent = t('lblDpDate');
+  document.getElementById('lbl-dp-guests').textContent = t('lblDpGuests');
+  document.getElementById('lbl-dp-name').textContent = t('lblDpName');
+  document.getElementById('lbl-dp-room').textContent = t('lblDpRoom');
+  document.getElementById('lbl-dp-phone').textContent = t('lblDpPhone');
+  document.getElementById('th-female-lbl').textContent = t('thFemale');
+  document.getElementById('th-female-sub').textContent = t('thFemaleSub');
+  document.getElementById('th-male-lbl').textContent = t('thMale');
+  document.getElementById('th-male-sub').textContent = t('thMaleSub');
+  document.getElementById('th-any-lbl').textContent = t('thAny');
+  document.getElementById('th-any-sub').textContent = t('thAnySub');
+  document.getElementById('couple-lbl').textContent = t('coupleLbl');
+  document.getElementById('couple-sub').textContent = t('coupleSub');
+  document.getElementById('summary-title').textContent = t('sumTitle');
+  document.getElementById('s-total-lbl').textContent = t('sumTotal');
+  document.getElementById('submit-massage').textContent = t('submitMassage');
+  document.getElementById('btn-huesped').textContent = t('btnHuesped');
+  document.getElementById('btn-externo').textContent = t('btnExterno');
+  document.getElementById('pol-cancel-lbl').textContent = t('polCancelLbl');
+  document.getElementById('pol-cancel-txt').textContent = t('polCancelTxt');
+  document.getElementById('pol-advance-lbl').textContent = t('polAdvanceLbl');
+  document.getElementById('pol-advance-txt').textContent = t('polAdvanceTxt');
+  document.getElementById('pol-medical').textContent = t('polMedical');
+  document.getElementById('dp-price-lbl').textContent = t('dpPriceLbl');
+  document.getElementById('dp-credit-lbl').textContent = t('dpCreditLbl');
+  document.getElementById('dp-btn-huesped').textContent = t('btnHuesped');
+  document.getElementById('dp-btn-externo').textContent = t('btnExterno');
+  document.getElementById('dp-sum-title').textContent = t('dpSumTitle');
+  document.getElementById('dp-total-lbl').textContent = t('dpTotal');
+  document.getElementById('dp-policy-txt').textContent = t('dpPolicy');
+  document.getElementById('submit-dp').textContent = t('submitDp');
+  document.getElementById('feat-pool').textContent = t('featPool');
+  document.getElementById('feat-pool-sub').textContent = t('featPoolSub');
+  document.getElementById('feat-fb').textContent = t('featFb');
+  document.getElementById('feat-fb-sub').textContent = t('featFbSub');
+  document.getElementById('feat-cowork').textContent = t('featCowork');
+  document.getElementById('feat-cowork-sub').textContent = t('featCoworkSub');
+  document.getElementById('feat-beach').textContent = t('featBeach');
+  document.getElementById('feat-beach-sub').textContent = t('featBeachSub');
+  renderServiceGrid();
+}
+
+function setText(id, text){
+  const el = document.getElementById(id);
+  if(!el) return;
+  // preserve ::after pseudo element by setting first text node
+  el.firstChild ? el.firstChild.textContent = text + ' ' : el.textContent = text;
+}
+
+// ─── SERVICIO GRID ───────────────────────────────────────────
+function renderServiceGrid(){
+  const grid = document.getElementById('service-grid');
+  grid.innerHTML = SERVICES.map(s => {
+    const isSel = S.service && S.service.id === s.id;
+    const name = S.lang === 'en' ? s.en : s.es;
+    const sub  = S.lang === 'en' ? s.es : s.en;
+    const btns = s.durations.map(d => {
+      const sel = isSel && S.duration && S.duration.min === d.min;
+      return `<button class="duration-btn${sel?' sel':''}" onclick="selectDuration('${s.id}',${d.min},${d.price},event)">${d.min} min · $${d.price.toLocaleString()}</button>`;
+    }).join('');
+    return `<div class="service-card${isSel?' selected':''}" onclick="selectService('${s.id}')">
+      <h3>${name}</h3><div class="sub">${sub}</div>
+      <div class="price-row">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectService(id){
+  S.service = SERVICES.find(s => s.id === id);
+  if(S.service.durations.length === 1) S.duration = S.service.durations[0];
+  else S.duration = null;
+  renderServiceGrid(); updateSummary();
+}
+
+function selectDuration(id, min, price, e){
+  e.stopPropagation();
+  S.service = SERVICES.find(s => s.id === id);
+  S.duration = {min, price};
+  renderServiceGrid(); updateSummary();
+}
+
+function selectTherapist(th){
+  S.therapist = th;
+  ['female','male','any'].forEach(id => document.getElementById('th-'+id).classList.toggle('selected', th === id));
+  updateSummary();
+}
+
+function toggleCouple(){
+  S.couple = !S.couple;
+  document.getElementById('couple-toggle').classList.toggle('on', S.couple);
+  updateSummary();
+}
+
+function setGuestType(type){
+  S.guestType = type;
+  document.getElementById('btn-huesped').classList.toggle('active', type==='huesped');
+  document.getElementById('btn-externo').classList.toggle('active', type==='externo');
+  document.getElementById('room-wrap').style.display  = type==='huesped' ? 'block' : 'none';
+  document.getElementById('phone-wrap').style.display = type==='externo' ? 'block' : 'none';
+}
+
+function setDPGuestType(type){
+  S.dpGuestType = type;
+  document.getElementById('dp-btn-huesped').classList.toggle('active', type==='huesped');
+  document.getElementById('dp-btn-externo').classList.toggle('active', type==='externo');
+  document.getElementById('dp-room-wrap').style.display  = type==='huesped' ? 'block' : 'none';
+  document.getElementById('dp-phone-wrap').style.display = type==='externo' ? 'block' : 'none';
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────────
+function updateSummary(){
+  const area = document.getElementById('summary-area');
+  if(!S.service || !S.duration){ area.style.display='none'; return; }
+  area.style.display = 'block';
+  const mult  = S.couple ? 2 : 1;
+  const total = S.duration.price * mult;
+  const name  = S.lang==='en' ? S.service.en : S.service.es;
+  document.getElementById('s-service').textContent  = name + ' · ' + S.duration.min + ' min' + (S.couple ? ' × 2' : '');
+  document.getElementById('s-price').textContent    = '$' + total.toLocaleString() + ' mxn';
+  const thMap = {female: S.lang==='es'?'Terapeuta: Mujer':'Therapist: Female', male: S.lang==='es'?'Terapeuta: Hombre':'Therapist: Male', any: S.lang==='es'?'Sin preferencia':'No preference'};
+  document.getElementById('s-therapist').textContent = S.therapist ? thMap[S.therapist] : '';
+  const date = document.getElementById('massage-date').value;
+  const time = document.getElementById('massage-time').value;
+  document.getElementById('s-datetime').textContent = (date && time) ? date + ' · ' + time : '';
+  document.getElementById('s-total').textContent = '$' + total.toLocaleString() + ' mxn';
+}
+
+function updateDPSummary(){
+  const date    = document.getElementById('dp-date').value;
+  const guests  = parseInt(document.getElementById('dp-guests').value) || 1;
+  const area    = document.getElementById('dp-summary-area');
+  if(!date){ area.style.display='none'; return; }
+  area.style.display = 'block';
+  const total = guests * 2200;
+  document.getElementById('dp-s-date').textContent   = date;
+  document.getElementById('dp-s-guests').textContent = guests + (S.lang==='es' ? ` persona${guests>1?'s':''}` : ` person${guests>1?'s':''}`);
+  document.getElementById('dp-s-price').textContent  = '× $2,200 mxn';
+  document.getElementById('dp-s-total').textContent  = '$' + total.toLocaleString() + ' mxn';
+}
+
+// ─── TIME SLOTS ──────────────────────────────────────────────
+function populateTimeSlots(){
+  const sel   = document.getElementById('massage-time');
+  const date  = document.getElementById('massage-date').value;
+  const now   = new Date();
+  const today = now.toISOString().split('T')[0];
+  sel.innerHTML = `<option value="">-- ${S.lang==='es'?'Hora':'Time'} --</option>`;
+  for(let h = 8; h <= 21; h++){
+    const timeStr = h.toString().padStart(2,'0') + ':00';
+    const opt = document.createElement('option');
+    opt.value = timeStr;
+    opt.textContent = timeStr;
+    if(date === today){
+      const slot = new Date(); slot.setHours(h,0,0,0);
+      const min2h = new Date(now.getTime() + 2*60*60*1000);
+      if(slot < min2h){ opt.disabled = true; opt.textContent += S.lang==='es' ? ' (no disponible)' : ' (unavailable)'; }
+    }
+    sel.appendChild(opt);
+  }
+}
+
+function setMinDates(){
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('massage-date').min = today;
+  document.getElementById('dp-date').min = today;
+}
+
+// ─── TABS ─────────────────────────────────────────────────────
+function switchTab(tab){
+  ['massage','daypass'].forEach(t => {
+    document.getElementById('tab-btn-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t+'-content').classList.toggle('active', t===tab);
+  });
+}
+
+// ─── ENVÍO MASAJE ─────────────────────────────────────────────
+async function submitMassage(){
+  hideError('massage-error');
+  if(!S.service || !S.duration)           return showError('massage-error', t('errService'));
+  if(!S.therapist)                         return showError('massage-error', t('errTherapist'));
+  const date  = document.getElementById('massage-date').value;
+  const time  = document.getElementById('massage-time').value;
+  if(!date || !time)                       return showError('massage-error', t('errDatetime'));
+  const name  = document.getElementById('guest-name').value.trim();
+  if(!name)                                return showError('massage-error', t('errName'));
+  if(S.guestType==='huesped' && !document.getElementById('room-number').value.trim())
+                                           return showError('massage-error', t('errRoom'));
+  if(S.guestType==='externo' && !document.getElementById('guest-phone').value.trim())
+                                           return showError('massage-error', t('errPhone'));
+
+  const payload = {
+    tipo: 'masaje',
+    servicio:    S.lang==='es' ? S.service.es : S.service.en,
+    duracion:    S.duration.min,
+    precio:      S.duration.price,
+    terapeuta:   S.therapist,
+    pareja:      S.couple,
+    fecha:       date,
+    hora:        time,
+    tipoHuesped: S.guestType,
+    nombre:      name,
+    habitacion:  document.getElementById('room-number').value.trim(),
+    telefono:    document.getElementById('guest-phone').value.trim(),
+    notas:       document.getElementById('guest-notes').value.trim(),
+    idioma:      S.lang,
+  };
+
+  await enviarSolicitud('submit-massage', 'massage-error', payload, S.guestType);
+}
+
+// ─── ENVÍO DAY PASS ───────────────────────────────────────────
+async function submitDaypass(){
+  hideError('dp-error');
+  const date   = document.getElementById('dp-date').value;
+  if(!date)  return showError('dp-error', t('errDpDate'));
+  const name   = document.getElementById('dp-name').value.trim();
+  if(!name)  return showError('dp-error', t('errDpName'));
+  if(S.dpGuestType==='huesped' && !document.getElementById('dp-room').value.trim())
+             return showError('dp-error', t('errRoom'));
+  if(S.dpGuestType==='externo' && !document.getElementById('dp-phone').value.trim())
+             return showError('dp-error', t('errPhone'));
+
+  const payload = {
+    tipo:        'daypass',
+    fecha:       date,
+    personas:    document.getElementById('dp-guests').value,
+    tipoHuesped: S.dpGuestType,
+    nombre:      name,
+    habitacion:  document.getElementById('dp-room').value.trim(),
+    telefono:    document.getElementById('dp-phone').value.trim(),
+    idioma:      S.lang,
+  };
+
+  await enviarSolicitud('submit-dp', 'dp-error', payload, S.dpGuestType);
+}
+
+// ─── FETCH A APPS SCRIPT ──────────────────────────────────────
+async function enviarSolicitud(btnId, errorId, payload, guestType){
+  const btn = document.getElementById(btnId);
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = t('sending');
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      // Apps Script no acepta application/json desde el browser por CORS;
+      // usamos text/plain y el script lo parsea igual
+      headers: { 'Content-Type': 'text/plain' },
+    });
+    const data = await res.json();
+
+    if(data.ok){
+      showSuccess(guestType);
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = originalText;
+      showError(errorId, data.error || 'Error al enviar. Intenta de nuevo.');
+    }
+  } catch(err){
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = originalText;
+    showError(errorId, S.lang==='es'
+      ? 'Error de conexión. Verifica tu internet e intenta de nuevo.'
+      : 'Connection error. Check your internet and try again.');
+  }
+}
+
+// ─── SUCCESS / ERROR ──────────────────────────────────────────
+function showSuccess(guestType){
+  document.getElementById('tabs-nav').style.display = 'none';
+  document.getElementById('tab-massage-content').style.display = 'none';
+  document.getElementById('tab-daypass-content').style.display = 'none';
+  document.getElementById('success-screen').classList.add('show');
+  document.getElementById('success-title').textContent = t('successTitle');
+  document.getElementById('success-body').textContent  = t('successBody');
+  document.getElementById('success-note').textContent  = guestType==='externo' ? t('successNoteExt') : '';
+}
+
+function showError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function hideError(id){ document.getElementById(id).classList.remove('show'); }
+
+function resetForm(){
+  document.getElementById('tabs-nav').style.display = 'flex';
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('tab-massage-content').style.display = 'none';
+  document.getElementById('tab-daypass-content').style.display = 'none';
+  switchTab('massage');
+  S.service=null; S.duration=null; S.therapist=null; S.couple=false;
+  document.getElementById('summary-area').style.display='none';
+  document.getElementById('dp-summary-area').style.display='none';
+  document.getElementById('submit-massage').disabled=false;
+  document.getElementById('submit-massage').classList.remove('loading');
+  document.getElementById('submit-dp').disabled=false;
+  document.getElementById('submit-dp').classList.remove('loading');
+  renderServiceGrid();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+setMinDates();
+populateTimeSlots();
+renderServiceGrid();
+</script>
+</body>
+</html>
