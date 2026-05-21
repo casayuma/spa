@@ -554,10 +554,11 @@ function isSlotAvailable(slotHour, durMin, busyBlocks){
   for(const block of busyBlocks){
     const bStart = block.start.getHours()*60 + block.start.getMinutes();
     const bEnd   = block.end.getHours()*60   + block.end.getMinutes();
-    // Buffer de 15 min antes y después del bloque
-    const bStartBuf = bStart - BUFFER_MIN;
-    const bEndBuf   = bEnd   + BUFFER_MIN;
-    if(slotStart < bEndBuf && slotEnd > bStartBuf) return false;
+    // Buffer de 15 min SOLO después del bloque — no antes
+    // Un nuevo masaje no puede empezar antes de que termine el anterior + buffer
+    // Pero sí puede terminar justo cuando empieza el siguiente
+    const bEndBuf = bEnd + BUFFER_MIN;
+    if(slotStart < bEndBuf && slotEnd > bStart) return false;
   }
   return true;
 }
