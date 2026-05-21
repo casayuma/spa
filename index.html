@@ -85,7 +85,7 @@ body{background:var(--cream);color:var(--olive);font-family:var(--font-body);min
 .slot-loading{text-align:center;padding:1.5rem;font-size:.75rem;color:var(--olive-pale);letter-spacing:.08em}
 .slot-loading::after{content:'';display:inline-block;width:14px;height:14px;border:1px solid var(--sand-mid);border-top-color:var(--olive-pale);border-radius:50%;animation:spin .8s linear infinite;margin-left:.5rem;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.slot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem}
 .slot-btn{padding:.55rem .3rem;border:1px solid var(--sand-dark);border-radius:4px;background:var(--sand);font-family:var(--font-body);font-size:.75rem;color:var(--olive);cursor:pointer;text-align:center;transition:all .2s;position:relative}
 .slot-btn:hover:not(.occupied):not(.disabled){border-color:var(--olive-pale);background:var(--sand-dark)}
 .slot-btn.selected{background:var(--olive);border-color:var(--olive);color:var(--cream)}
@@ -155,7 +155,7 @@ body{background:var(--cream);color:var(--olive);font-family:var(--font-body);min
   .hero h1{font-size:2.3rem}
   .service-grid{grid-template-columns:1fr}
   .form-row.two{grid-template-columns:1fr}
-  .slot-grid{grid-template-columns:repeat(3,1fr)}
+  .slot-grid{grid-template-columns:repeat(4,1fr)}
 }
 </style>
 </head>
@@ -547,17 +547,16 @@ async function fetchBusyBlocks(dateStr){
 }
 
 function isSlotAvailable(slotHour, durMin, busyBlocks){
-  // Slot start/end
-  const slotStart = slotHour * 60;            // en minutos desde medianoche
+  // Todo en minutos para precisión
+  const slotStart = Math.round(slotHour * 60);
   const slotEnd   = slotStart + durMin;
 
   for(const block of busyBlocks){
     const bStart = block.start.getHours()*60 + block.start.getMinutes();
     const bEnd   = block.end.getHours()*60   + block.end.getMinutes();
-    // Con buffer de 15 min alrededor del bloque ocupado
+    // Buffer de 15 min antes y después del bloque
     const bStartBuf = bStart - BUFFER_MIN;
     const bEndBuf   = bEnd   + BUFFER_MIN;
-    // Overlap check
     if(slotStart < bEndBuf && slotEnd > bStartBuf) return false;
   }
   return true;
@@ -607,19 +606,17 @@ function renderSlots(){
   // close = 22:00, so lastStart = 22*60 - durMin (in minutes)
   const lastStartMin = CLOSE_HOUR * 60 - durMin;
 
-  // Build slots every 30 min from 8:00
+  // Slots cada 15 minutos — permite ofrecer exactamente el siguiente slot disponible tras buffer
   const slots=[];
-  for(let h=OPEN_HOUR; h*60 <= lastStartMin; h++){
-    // Also add :30 slot
-    [0,30].forEach(m=>{
-      const totalMin = h*60+m;
-      if(totalMin > lastStartMin) return;
-      const label = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-      const slotDate = new Date(dateStr+'T'+label+':00');
-      const isPast   = isToday && (slotDate.getTime() - now.getTime()) < minAdvMs;
-      const avail    = !isPast && isSlotAvailable(h + m/60, durMin, S.busyBlocks);
-      slots.push({label, hour:h+m/60, totalMin, isPast, avail});
-    });
+  const STEP = 15; // minutos entre slots
+  for(let totalMin = OPEN_HOUR*60; totalMin + durMin <= CLOSE_HOUR*60; totalMin += STEP){
+    const h = Math.floor(totalMin/60);
+    const m = totalMin % 60;
+    const label = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    const slotDate = new Date(dateStr+'T'+label+':00');
+    const isPast   = isToday && (slotDate.getTime() - now.getTime()) < minAdvMs;
+    const avail    = !isPast && isSlotAvailable(totalMin/60, durMin, S.busyBlocks);
+    slots.push({label, hour:totalMin/60, totalMin, isPast, avail});
   }
 
   if(slots.length===0){
@@ -792,20 +789,46 @@ function showError(id,msg){
 }
 function hideError(id){document.getElementById(id).classList.remove('show');}
 function resetForm(){
-  document.getElementById('tabs-nav').style.display='flex';
+  // Restore nav and hide success
+  const nav = document.getElementById('tabs-nav');
+  nav.style.display='flex';
   document.getElementById('success-screen').classList.remove('show');
-  switchTab('massage');
+
+  // Show massage tab content explicitly
+  document.getElementById('tab-massage-content').style.display='block';
+  document.getElementById('tab-daypass-content').style.display='none';
+  document.getElementById('tab-btn-massage').classList.add('active');
+  document.getElementById('tab-btn-daypass').classList.remove('active');
+
+  // Reset state
   S.service=null; S.duration=null; S.couple=false; S.selectedSlot=null;
   S.busyBlocks=[]; S.slotsLoaded=false;
+
+  // Reset couple toggle
+  document.getElementById('couple-toggle').classList.remove('on');
+
+  // Reset form fields
   document.getElementById('massage-date').value='';
+  document.getElementById('guest-name').value='';
+  document.getElementById('room-number').value='';
+  document.getElementById('guest-phone').value='';
+  document.getElementById('guest-notes').value='';
   document.getElementById('summary-area').style.display='none';
   document.getElementById('dp-summary-area').style.display='none';
-  document.getElementById('submit-massage').disabled=false;
-  document.getElementById('submit-massage').classList.remove('loading');
-  document.getElementById('submit-dp').disabled=false;
-  document.getElementById('submit-dp').classList.remove('loading');
+
+  // Reset buttons
+  ['submit-massage','submit-dp'].forEach(id=>{
+    const btn=document.getElementById(id);
+    btn.disabled=false; btn.classList.remove('loading');
+    btn.textContent=id==='submit-massage'?t('submitMassage'):t('submitDp');
+  });
+
+  // Reset service grid and slots
   renderServiceGrid();
   document.getElementById('slot-section').innerHTML=`<div class="no-date">${t('slotNoDate')}</div>`;
+
+  // Scroll to top
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 // ── INIT ──────────────────────────────────────────────────────
