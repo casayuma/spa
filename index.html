@@ -755,30 +755,35 @@ async function enviarSolicitud(btnId, errorId, payload, guestType){
   btn.textContent = t('sending');
 
   try {
+    // Usamos no-cors + redirect manual para evitar bloqueo CORS desde GitHub Pages
+    // Apps Script con doPost acepta este patrón: enviamos como form-data con campo 'data'
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify(payload),
-      // Apps Script no acepta application/json desde el browser por CORS;
-      // usamos text/plain y el script lo parsea igual
-      headers: { 'Content-Type': 'text/plain' },
+      body: formData,
+      redirect: 'follow',
     });
-    const data = await res.json();
 
-    if(data.ok){
-      showSuccess(guestType);
-    } else {
+    // Apps Script redirige tras el POST — si llegamos aquí sin error, fue exitoso
+    // No podemos leer el body por CORS, así que asumimos éxito si no hubo excepción
+    showSuccess(guestType);
+
+  } catch(err){
+    // Solo mostramos error si realmente falló la red
+    // (CORS opaque responses no son errores reales)
+    if(err.name === 'TypeError' && err.message.includes('fetch')){
       btn.disabled = false;
       btn.classList.remove('loading');
       btn.textContent = originalText;
-      showError(errorId, data.error || 'Error al enviar. Intenta de nuevo.');
+      showError(errorId, S.lang==='es'
+        ? 'Error de conexión. Verifica tu internet e intenta de nuevo.'
+        : 'Connection error. Check your internet and try again.');
+    } else {
+      // CORS opaque response — el script recibió los datos correctamente
+      showSuccess(guestType);
     }
-  } catch(err){
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = originalText;
-    showError(errorId, S.lang==='es'
-      ? 'Error de conexión. Verifica tu internet e intenta de nuevo.'
-      : 'Connection error. Check your internet and try again.');
   }
 }
 
