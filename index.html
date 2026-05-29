@@ -547,18 +547,22 @@ async function fetchBusyBlocks(dateStr){
 }
 
 function isSlotAvailable(slotHour, durMin, busyBlocks){
-  // Todo en minutos para precisión
   const slotStart = Math.round(slotHour * 60);
   const slotEnd   = slotStart + durMin;
 
   for(const block of busyBlocks){
-    const bStart = block.start.getHours()*60 + block.start.getMinutes();
-    const bEnd   = block.end.getHours()*60   + block.end.getMinutes();
-    // Buffer de 15 min SOLO después del bloque — no antes
-    // Un nuevo masaje no puede empezar antes de que termine el anterior + buffer
-    // Pero sí puede terminar justo cuando empieza el siguiente
-    const bEndBuf = bEnd + BUFFER_MIN;
-    if(slotStart < bEndBuf && slotEnd > bStart) return false;
+    const bStart    = block.start.getHours()*60 + block.start.getMinutes();
+    const bEnd      = block.end.getHours()*60   + block.end.getMinutes();
+    const bEndBuf   = bEnd + BUFFER_MIN; // buffer solo después
+
+    // Slot ocupado si:
+    // A) El nuevo masaje empieza dentro del bloque existente: slotStart >= bStart && slotStart < bEnd
+    // B) El nuevo masaje empieza en el buffer post-masaje: slotStart >= bEnd && slotStart < bEndBuf
+    // C) El nuevo masaje engloba al bloque existente: slotStart < bStart && slotEnd > bStart
+    if(
+      (slotStart >= bStart && slotStart < bEndBuf) || // empieza durante o en buffer
+      (slotStart < bStart && slotEnd > bStart)         // el nuevo masaje terminaría dentro del existente
+    ) return false;
   }
   return true;
 }
