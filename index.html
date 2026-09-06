@@ -536,6 +536,7 @@ async function fetchBusyBlocks(dateStr){
     return data.items
       .filter(ev=>!ev.summary?.includes('[CANCELADO]'))
       .map(ev=>({
+        allDay: !ev.start.dateTime, // evento de todo el día (ej. cierre por mantenimiento) — bloquea el día completo
         start: new Date(ev.start.dateTime||ev.start.date),
         end:   new Date(ev.end.dateTime||ev.end.date),
         title: ev.summary||'',
@@ -546,23 +547,34 @@ async function fetchBusyBlocks(dateStr){
   }
 }
 
+// Puerto Escondido usa hora del centro de México sin horario de verano (fijo UTC-6).
+// Estos helpers convierten cualquier instante a fecha/minuto-del-día en esa zona horaria
+// SIN depender de la zona horaria del navegador/dispositivo de quien esté agendando.
+function mxMinutesOfDay(d){
+  const shifted = new Date(d.getTime() - 6*60*60*1000);
+  return shifted.getUTCHours()*60 + shifted.getUTCMinutes();
+}
+function mxDateStr(d){
+  const shifted = new Date(d.getTime() - 6*60*60*1000);
+  const y=shifted.getUTCFullYear(), mo=shifted.getUTCMonth()+1, da=shifted.getUTCDate();
+  return `${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;
+}
+
 function isSlotAvailable(slotHour, durMin, busyBlocks){
   const slotStart = Math.round(slotHour * 60);
   const slotEnd   = slotStart + durMin;
 
   for(const block of busyBlocks){
-    const bStart    = block.start.getHours()*60 + block.start.getMinutes();
-    const bEnd      = block.end.getHours()*60   + block.end.getMinutes();
-    const bEndBuf   = bEnd + BUFFER_MIN; // buffer solo después
+    if(block.allDay) return false; // el spa está cerrado/bloqueado todo ese día
 
-    // Slot ocupado si:
-    // A) El nuevo masaje empieza dentro del bloque existente: slotStart >= bStart && slotStart < bEnd
-    // B) El nuevo masaje empieza en el buffer post-masaje: slotStart >= bEnd && slotStart < bEndBuf
-    // C) El nuevo masaje engloba al bloque existente: slotStart < bStart && slotEnd > bStart
-    if(
-      (slotStart >= bStart && slotStart < bEndBuf) || // empieza durante o en buffer
-      (slotStart < bStart && slotEnd > bStart)         // el nuevo masaje terminaría dentro del existente
-    ) return false;
+    const bStart    = mxMinutesOfDay(block.start);
+    const bEnd      = mxMinutesOfDay(block.end);
+    // Buffer de preparación/traslado ANTES y DESPUÉS de cada masaje ya agendado
+    const bStartBuf = bStart - BUFFER_MIN;
+    const bEndBuf    = bEnd + BUFFER_MIN;
+
+    // Ocupado si el nuevo horario se traslapa en cualquier punto con [bStartBuf, bEndBuf)
+    if(slotStart < bEndBuf && slotEnd > bStartBuf) return false;
   }
   return true;
 }
@@ -602,14 +614,12 @@ function renderSlots(){
     return;
   }
 
-  const durMin   = S.duration.min;
-  const now      = new Date();
-  const isToday  = dateStr === now.toISOString().split('T')[0];
-  const minAdvMs = MIN_ADVANCE_H * 60 * 60 * 1000;
-
-  // Last valid start hour based on duration
-  // close = 22:00, so lastStart = 22*60 - durMin (in minutes)
-  const lastStartMin = CLOSE_HOUR * 60 - durMin;
+  const durMin       = S.duration.min;
+  const now          = new Date();
+  const todayMX      = mxDateStr(now);        // "hoy" en Puerto Escondido, no en el navegador del huésped
+  const isToday      = dateStr === todayMX;
+  const nowMinutesMX = mxMinutesOfDay(now);   // minuto del día actual en Puerto Escondido
+  const minAdvMin    = MIN_ADVANCE_H * 60;
 
   // Slots cada 15 minutos — permite ofrecer exactamente el siguiente slot disponible tras buffer
   const slots=[];
@@ -617,10 +627,9 @@ function renderSlots(){
   for(let totalMin = OPEN_HOUR*60; totalMin + durMin <= CLOSE_HOUR*60; totalMin += STEP){
     const h = Math.floor(totalMin/60);
     const m = totalMin % 60;
-    const label = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-    const slotDate = new Date(dateStr+'T'+label+':00');
-    const isPast   = isToday && (slotDate.getTime() - now.getTime()) < minAdvMs;
-    const avail    = !isPast && isSlotAvailable(totalMin/60, durMin, S.busyBlocks);
+    const label  = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    const isPast = isToday && (totalMin - nowMinutesMX) < minAdvMin;
+    const avail  = !isPast && isSlotAvailable(totalMin/60, durMin, S.busyBlocks);
     slots.push({label, hour:totalMin/60, totalMin, isPast, avail});
   }
 
@@ -837,7 +846,7 @@ function resetForm(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────
-const today=new Date().toISOString().split('T')[0];
+const today=mxDateStr(new Date()); // fecha de hoy en Puerto Escondido, no la del dispositivo
 document.getElementById('massage-date').min=today;
 document.getElementById('dp-date').min=today;
 renderServiceGrid();
