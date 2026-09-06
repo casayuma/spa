@@ -348,7 +348,10 @@ const CLOSE_HOUR      = 22;   // cierre real
 const MIN_ADVANCE_H   = 2;    // horas mínimas anticipación
 
 // ── SERVICES ──────────────────────────────────────────────────
-const SERVICES = [
+// Catálogo de respaldo (se usa mientras carga, o si el backend no responde).
+// La fuente real de precios/tratamientos ahora vive en la pestaña "Servicios"
+// del spreadsheet — se lee vía loadServicios() y esto queda solo como fallback.
+let SERVICES = [
   {id:'relajante', es:'Masaje Relajante',         en:'Relaxing Massage',     durations:[{min:60,price:2000},{min:90,price:2800}]},
   {id:'tejido',    es:'Tejido Profundo',           en:'Deep Tissue',          durations:[{min:60,price:2200},{min:90,price:3100}]},
   {id:'piedras',   es:'Piedras Calientes y Frías', en:'Hot & Cold Stone',     durations:[{min:60,price:2200}]},
@@ -357,6 +360,22 @@ const SERVICES = [
   {id:'zapoteco',  es:'Masaje Zapoteco',           en:'Zapotec Massage',      durations:[{min:60,price:2200}]},
   {id:'facial',    es:'Facial',                    en:'Facial',               durations:[{min:45,price:1400}]},
 ];
+
+// Trae el catálogo real desde Apps Script (pestaña "Servicios" del spreadsheet).
+// Si algo falla, se queda calladamente con el catálogo de respaldo de arriba
+// — el huésped nunca ve un error, solo seguiría viendo los precios previos.
+async function loadServicios(){
+  try{
+    const res  = await fetch(APPS_SCRIPT_URL+'?action=servicios');
+    const data = await res.json();
+    if(data && data.ok && Array.isArray(data.servicios) && data.servicios.length){
+      SERVICES = data.servicios;
+      renderServiceGrid();
+    }
+  } catch(err){
+    console.error('No se pudo cargar el catálogo de servicios, usando respaldo local:', err);
+  }
+}
 
 // ── STATE ─────────────────────────────────────────────────────
 let S = {
@@ -567,14 +586,16 @@ function isSlotAvailable(slotHour, durMin, busyBlocks){
   for(const block of busyBlocks){
     if(block.allDay) return false; // el spa está cerrado/bloqueado todo ese día
 
-    const bStart    = mxMinutesOfDay(block.start);
-    const bEnd      = mxMinutesOfDay(block.end);
-    // Buffer de preparación/traslado ANTES y DESPUÉS de cada masaje ya agendado
-    const bStartBuf = bStart - BUFFER_MIN;
-    const bEndBuf    = bEnd + BUFFER_MIN;
+    const bStart  = mxMinutesOfDay(block.start);
+    const bEnd    = mxMinutesOfDay(block.end);
+    const bEndBuf = bEnd + BUFFER_MIN; // el margen de 15 min solo aplica DESPUÉS de la cita
 
-    // Ocupado si el nuevo horario se traslapa en cualquier punto con [bStartBuf, bEndBuf)
-    if(slotStart < bEndBuf && slotEnd > bStartBuf) return false;
+    // Ocupado si el nuevo masaje empieza durante la cita existente o su buffer posterior,
+    // o si (aunque empiece antes) terminaría encimándose con la cita existente.
+    if(
+      (slotStart >= bStart && slotStart < bEndBuf) ||
+      (slotStart < bStart && slotEnd > bStart)
+    ) return false;
   }
   return true;
 }
@@ -849,7 +870,8 @@ function resetForm(){
 const today=mxDateStr(new Date()); // fecha de hoy en Puerto Escondido, no la del dispositivo
 document.getElementById('massage-date').min=today;
 document.getElementById('dp-date').min=today;
-renderServiceGrid();
+renderServiceGrid(); // con el catálogo de respaldo, para que la página nunca se vea vacía
+loadServicios();     // y en cuanto responda el backend, se actualiza con los precios reales
 </script>
 </body>
 </html>
